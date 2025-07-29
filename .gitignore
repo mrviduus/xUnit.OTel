@@ -1,0 +1,57 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Bb]uild/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userprefs
+*.pidb
+*.booproj
+*.swp
+*~
+
+# Visual Studio Code
+.vscode/
+
+# JetBrains Rider
+.idea/
+
+# Coverage results
+coverage/
+*.coverage
+*.coveragexml
+
+# Test results
+TestResults/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files
+*.tmp
+*.temp
