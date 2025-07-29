@@ -4,10 +4,11 @@ using Microsoft.Extensions.Logging;
 namespace xUnit.OTel.Logging;
 
 [ProviderAlias("XUnit")]
-public partial class XunitLoggerProvider : ILoggerProvider
+public partial class XunitLoggerProvider : ILoggerProvider, ISupportExternalScope
 {
     private readonly ConcurrentDictionary<string, XunitLogger> _loggers = [];
     private readonly XunitLoggerOptions _options;
+    private IExternalScopeProvider _scopeProvider = new LoggerExternalScopeProvider();
     ~XunitLoggerProvider()
     {
         Dispose(false);
@@ -15,10 +16,8 @@ public partial class XunitLoggerProvider : ILoggerProvider
 
     public virtual ILogger CreateLogger(string categoryName)
     {
-        return _loggers.GetOrAdd(categoryName, (name) =>
-            _outputHelperAccessor is not null
-                ? new XunitLogger(name, _outputHelperAccessor, _options)
-                : new XunitLogger(name, _outputHelperAccessor, _options));
+        return _loggers.GetOrAdd(categoryName, name =>
+            new XunitLogger(name, _outputHelperAccessor, _options, _scopeProvider));
     }
 
     public void Dispose()
@@ -28,7 +27,12 @@ public partial class XunitLoggerProvider : ILoggerProvider
     }
     protected virtual void Dispose(bool disposing)
     {
+        _loggers.Clear();
+    }
 
+    public void SetScopeProvider(IExternalScopeProvider scopeProvider)
+    {
+        _scopeProvider = scopeProvider ?? new LoggerExternalScopeProvider();
     }
 
 }
