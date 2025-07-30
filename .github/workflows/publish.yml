@@ -33,20 +33,35 @@ jobs:
 
     - name: Update project version
       run: |
+        # Find the csproj file first
+        CSPROJ_FILE=$(find . -name "xUnit.OTel.csproj" -type f | head -n 1)
+        if [ -z "$CSPROJ_FILE" ]; then
+          echo "Error: Could not find xUnit.OTel.csproj"
+          exit 1
+        fi
+        echo "Found project file: $CSPROJ_FILE"
         # Use a different delimiter for sed to avoid conflicts with forward slashes
-        sed -i "s|<Version>.*</Version>|<Version>${{ steps.get_version.outputs.VERSION }}</Version>|" xUnit.OTel.csproj
+        sed -i "s|<Version>.*</Version>|<Version>${{ steps.get_version.outputs.VERSION }}</Version>|" "$CSPROJ_FILE"
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: |
+        CSPROJ_FILE=$(find . -name "xUnit.OTel.csproj" -type f | head -n 1)
+        dotnet restore "$CSPROJ_FILE"
 
     - name: Build
-      run: dotnet build --no-restore --configuration Release
+      run: |
+        CSPROJ_FILE=$(find . -name "xUnit.OTel.csproj" -type f | head -n 1)
+        dotnet build "$CSPROJ_FILE" --no-restore --configuration Release
 
     - name: Test
-      run: dotnet test --no-build --configuration Release --verbosity normal
+      run: |
+        CSPROJ_FILE=$(find . -name "xUnit.OTel.csproj" -type f | head -n 1)
+        dotnet test "$CSPROJ_FILE" --no-build --configuration Release --verbosity normal
 
     - name: Pack NuGet package
-      run: dotnet pack --no-build --configuration Release --output ./nupkg
+      run: |
+        CSPROJ_FILE=$(find . -name "xUnit.OTel.csproj" -type f | head -n 1)
+        dotnet pack "$CSPROJ_FILE" --no-build --configuration Release --output ./nupkg
 
     - name: Publish to NuGet
       run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
