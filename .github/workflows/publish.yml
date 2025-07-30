@@ -27,7 +27,7 @@ jobs:
 
     - name: Update project version
       run: |
-        sed -i "s/<Version>.*<\/Version>/<Version>${{ steps.get_version.outputs.VERSION }}<\/Version>/" xUnit.OTel.csproj
+        sed -i "s/<Version>.*<\/Version>/<Version>${{ steps.get_version.outputs.VERSION }}<\/Version>/" src/xUnit.OTel/xUnit.OTel.csproj
 
     - name: Restore dependencies
       run: dotnet restore
