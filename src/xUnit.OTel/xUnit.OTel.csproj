@@ -16,7 +16,8 @@
     <RepositoryUrl>https://github.com/mrviduus/xUnit.OTel</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>../../README.md</PackageReadmeFile>
+    <!-- README is located in the repository root. Include it in the package -->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
@@ -28,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Include the root README in the package at the package root -->
     <None Include="../../README.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
