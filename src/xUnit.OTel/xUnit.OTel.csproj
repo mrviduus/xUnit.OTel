@@ -21,7 +21,17 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
-<ItemGroup>
+  <ItemGroup>
+    <Compile Remove="xUnit.OTel.Tests\**" />
+    <EmbeddedResource Remove="xUnit.OTel.Tests\**" />
+    <None Remove="xUnit.OTel.Tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="OpenTelemetry" />
     <PackageReference Include="OpenTelemetry.Api" />
     <PackageReference Include="OpenTelemetry.AutoInstrumentation" />
@@ -29,10 +39,6 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
     <PackageReference Include="xunit.v3.extensibility.core" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

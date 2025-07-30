@@ -23,9 +23,9 @@ public class XunitLogger : ILogger
         _scopeProvider = scopeProvider ?? throw new ArgumentNullException(nameof(scopeProvider));
     }
 
-    public IDisposable BeginScope<TState>(TState state)
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
     {
-        return _scopeProvider.Push(state)!;
+        return _scopeProvider.Push(state);
     }
 
     public bool IsEnabled(LogLevel logLevel)
