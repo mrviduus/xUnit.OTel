@@ -1,7 +1,8 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using xUnit.OTel.Diagnostics;
 using Xunit;
-using Xunit.v3;
 
 [assembly: AssemblyFixture(typeof(xUnit.OTel.Tests.TestFixture))]
 
@@ -11,33 +12,33 @@ public class TestFixture : IAsyncLifetime
 {
     private IHost _host = null!;
 
+    public IHost Host => _host;
+
     public async ValueTask InitializeAsync()
     {
-        var solutionRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", ".."));
-        var logPath = Path.Combine(
-            solutionRoot,
-            "logs",
-            $"log-{DateTime.UtcNow:yyyy-MM-dd-HH-mm-ss}.json");
 
-        // Ensure the directory exists
-        var logDirectory = Path.GetDirectoryName(logPath);
-        if (!string.IsNullOrEmpty(logDirectory))
-        {
-            Directory.CreateDirectory(logDirectory);
-        }
-
-        _host = Host.CreateDefaultBuilder()
+        _host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
             .ConfigureServices(services =>
             {
                 services.AddOTelDiagnostics();
+
+                // Add HttpClient for testing HTTP instrumentation
+                services.AddHttpClient();
             })
             .Build();
 
         await _host.StartAsync();
+
+        // Log the test run initialization
+        var logger = _host.Services.GetRequiredService<ILogger<TestFixture>>();
+        logger.LogInformation("OpenTelemetry diagnostics configured with HTTP client instrumentation");
     }
 
     public async ValueTask DisposeAsync()
     {
+        var logger = _host.Services.GetRequiredService<ILogger<TestFixture>>();
+        logger.LogInformation("Test fixture disposing...");
+
         await _host.StopAsync();
         _host.Dispose();
     }
