@@ -16,7 +16,7 @@
     <RepositoryUrl>https://github.com/mrviduus/xUnit.OTel</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>..\..\README.md</PackageReadmeFile>
+    <PackageReadmeFile>../../README.md</PackageReadmeFile>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
@@ -25,6 +25,10 @@
     <Compile Remove="xUnit.OTel.Tests\**" />
     <EmbeddedResource Remove="xUnit.OTel.Tests\**" />
     <None Remove="xUnit.OTel.Tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
 
