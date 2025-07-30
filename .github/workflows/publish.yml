@@ -1,16 +1,32 @@
 name: Publish to NuGet
 
 on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - '*'
   release:
     types: [published]
-  workflow_dispatch: 
+  workflow_dispatch:
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  NuGetDirectory: ${{ github.workspace }}/nuget
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -19,55 +35,59 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
-    - name: Extract version from tag
-      id: get_version
+    - name: Extract version
       run: |
-        if [[ "${{ github.event_name }}" == "release" ]]; then
-          VERSION=${GITHUB_REF#refs/tags/v}
+        if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+          VERSION="${GITHUB_REF#refs/tags/v}"
+        elif [[ "${{ github.event_name }}" == "release" ]]; then
+          VERSION="${GITHUB_REF#refs/tags/v}"
         else
-          # Use a default version for manual runs
-          VERSION="0.0.0-dev"
+          VERSION="1.0.0.${{ github.run_number }}"
         fi
-        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-        echo "Extracted version: $VERSION"
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "Version set to: $VERSION"
 
-    - name: Update project version
+    - name: Find project file
       run: |
-        # Find the csproj file first
         CSPROJ_FILE=$(find . -name "xUnit.OTel.csproj" -type f | head -n 1)
         if [ -z "$CSPROJ_FILE" ]; then
           echo "Error: Could not find xUnit.OTel.csproj"
           exit 1
         fi
+        echo "CSPROJ_FILE=$CSPROJ_FILE" >> $GITHUB_ENV
         echo "Found project file: $CSPROJ_FILE"
-        # Use a different delimiter for sed to avoid conflicts with forward slashes
-        sed -i "s|<Version>.*</Version>|<Version>${{ steps.get_version.outputs.VERSION }}</Version>|" "$CSPROJ_FILE"
 
-    - name: Restore dependencies
+    - name: Update .csproj with Version
       run: |
-        CSPROJ_FILE=$(find . -name "xUnit.OTel.csproj" -type f | head -n 1)
-        dotnet restore "$CSPROJ_FILE"
+        sed -i "s|<Version>.*</Version>|<Version>${{ env.VERSION }}</Version>|" "${{ env.CSPROJ_FILE }}"
+        echo "Updated version in .csproj to: ${{ env.VERSION }}"
+
+    - name: Install dependencies
+      run: dotnet restore "${{ env.CSPROJ_FILE }}"
 
     - name: Build
-      run: |
-        CSPROJ_FILE=$(find . -name "xUnit.OTel.csproj" -type f | head -n 1)
-        dotnet build "$CSPROJ_FILE" --no-restore --configuration Release
+      run: dotnet build "${{ env.CSPROJ_FILE }}" --configuration Release --no-restore
 
-    - name: Test
-      run: |
-        CSPROJ_FILE=$(find . -name "xUnit.OTel.csproj" -type f | head -n 1)
-        dotnet test "$CSPROJ_FILE" --no-build --configuration Release --verbosity normal
+    - name: Run tests
+      run: dotnet test "${{ env.CSPROJ_FILE }}" --no-restore --configuration Release --verbosity normal
+
+    - name: Ensure NuGet Directory Exists
+      run: mkdir -p "${{ env.NuGetDirectory }}"
 
     - name: Pack NuGet package
-      run: |
-        CSPROJ_FILE=$(find . -name "xUnit.OTel.csproj" -type f | head -n 1)
-        dotnet pack "$CSPROJ_FILE" --no-build --configuration Release --output ./nupkg
+      run: dotnet pack "${{ env.CSPROJ_FILE }}" --configuration Release --no-build --output "${{ env.NuGetDirectory }}"
+
+    - name: Setup NuGet CLI
+      uses: NuGet/setup-nuget@v1
+      with:
+        nuget-version: 'latest'
 
     - name: Publish to NuGet
-      run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+      run: dotnet nuget push "${{ env.NuGetDirectory }}/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
 
     - name: Upload package artifacts
       uses: actions/upload-artifact@v4
       with:
         name: published-packages
-        path: ./nupkg/*.nupkg
+        path: ${{ env.NuGetDirectory }}/*.nupkg
