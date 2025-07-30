@@ -1,5 +1,9 @@
 # xUnit.OTel
 
+<p align="center">
+  <img src="icon.svg" alt="xUnit.OTel Logo" width="128" height="128">
+</p>
+
 [![Build Status](https://github.com/mrviduus/xUnit.OTel/workflows/Build%20and%20Test/badge.svg)](https://github.com/mrviduus/xUnit.OTel/actions)
 [![NuGet Version](https://img.shields.io/nuget/v/xUnit.OTel.svg)](https://www.nuget.org/packages/xUnit.OTel/)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/xUnit.OTel.svg)](https://www.nuget.org/packages/xUnit.OTel/)
