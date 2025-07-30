@@ -186,7 +186,7 @@ public static class OTelConfigurationExtensions
                 options.ParseStateValues = true;
                 // Add custom processor to attach log entries as events to the current activity
                 options.AddProcessor(new ActivityEventLogProcessor());
-// Only add OTLP exporter in debug builds to reduce overhead in production tests
+                // Only add OTLP exporter in debug builds to reduce overhead in production tests
 #if DEBUG
                 // Add OpenTelemetry Protocol (OTLP) exporter for sending logs to telemetry backends
                 options.AddOtlpExporter();
@@ -199,6 +199,8 @@ public static class OTelConfigurationExtensions
             logging.AddConsole();
             // Add custom xUnit output logging provider to integrate with xUnit's test output
             logging.AddXUnitOutput();
+
+            configureLogging?.Invoke(logging);
         });
         // Return the service collection to enable method chaining
         return services;
