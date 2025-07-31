@@ -9,54 +9,33 @@
 [![NuGet Downloads](https://img.shields.io/nuget/dt/xUnit.OTel.svg)](https://www.nuget.org/packages/xUnit.OTel/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-OpenTelemetry integration for xUnit v3 testing framework, providing automatic distributed tracing and observability for your unit tests with minimal setup.
+**🎯 What is this?** A tool that helps you see what your tests are doing, like a camera that records everything happening inside your tests!
 
-## Features
+**⚠️ Important:** This package only works with xUnit v3!
 
-- 🔍 **Automatic Test Tracing**: Use `[Trace]` attribute to automatically trace test methods
-- 📊 **HTTP Instrumentation**: Automatic tracing of HTTP requests with detailed telemetry
-- 🏷️ **Rich Metadata**: Automatically tags tests with class, method, and framework information
-- 📝 **Integrated Logging**: OpenTelemetry logging integration with xUnit test output
-- 🔧 **Dependency Injection**: Full integration with .NET dependency injection
-- 🚀 **Multiple Exporters**: Support for OTLP, Console, and custom exporters
-- ⚡ **Low Overhead**: Optimized for test scenarios with minimal performance impact
-- 🎯 **xUnit v3 Only**: Built exclusively for xUnit v3 testing framework
+## 🌟 What Does It Do?
 
-## Installation
+Imagine you're playing with toys and want to know:
+- 🎬 When did you start playing?
+- ⏱️ How long did you play?
+- 🧸 Which toys did you use?
+- 📍 What happened step by step?
 
-Install via NuGet Package Manager:
+This tool does the same for your code tests!
+
+## 📦 Installation
+
+Add it to your project:
 
 ```bash
 dotnet add package xUnit.OTel
 ```
 
-Or via Package Manager Console:
+## 🚀 Super Simple Examples
 
-```powershell
-Install-Package xUnit.OTel
-```
+### Example 1: Trace ALL Tests in Your Project (Easiest!)
 
-## Quick Start
-
-### Simple Attribute-Based Tracing
-
-```csharp
-using xUnit.OTel.Attributes;
-using Xunit;
-
-public class MyTests
-{
-    [Fact]
-    [Trace] // Automatically traces this test method
-    public void MyTest()
-    {
-        // Your test code here - automatically traced!
-        Assert.True(true);
-    }
-}
-```
-
-### Full Integration with Dependency Injection
+Want to track every single test without adding `[Trace]` to each one? Here's the magic:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -65,216 +44,360 @@ using xUnit.OTel.Diagnostics;
 using xUnit.OTel.Attributes;
 using Xunit;
 
-// Set up test fixture for the assembly
-[assembly: AssemblyFixture(typeof(MyTestFixture))]
+// 🎯 This ONE line tracks EVERY test in your project!
+[assembly: Trace]
 
-public class MyTestFixture : IAsyncLifetime
+// You still need the setup
+[assembly: AssemblyFixture(typeof(TestSetup))]
+
+public class TestSetup : IAsyncLifetime
 {
-    private IHost _host = null!;
-    public IHost Host => _host;
+    public IHost Host { get; private set; }
 
     public async ValueTask InitializeAsync()
     {
-        _host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
+        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
             .ConfigureServices(services =>
             {
-                // Add OpenTelemetry diagnostics with default configuration
+                // Required for tracing to work
                 services.AddOTelDiagnostics();
-                // Add HttpClient for testing HTTP instrumentation
-                services.AddHttpClient();
             })
             .Build();
-        await _host.StartAsync();
+        
+        await Host.StartAsync();
     }
 
     public async ValueTask DisposeAsync()
     {
-        await _host.StopAsync();
-        _host.Dispose();
+        await Host.StopAsync();
+        Host.Dispose();
     }
 }
 
+// Now ALL your tests are automatically tracked!
 public class MyTests
 {
-    private readonly HttpClient _httpClient;
-
-    public MyTests(MyTestFixture fixture)
+    [Fact]
+    public void Test1() // ✅ Automatically traced!
     {
-        var httpClientFactory = fixture.Host.Services.GetRequiredService<IHttpClientFactory>();
-        _httpClient = httpClientFactory.CreateClient();
+        var result = 2 + 2;
+        Assert.Equal(4, result);
     }
 
     [Fact]
-    [Trace] // Traces HTTP calls automatically
-    public async Task HttpTest()
+    public void Test2() // ✅ Also automatically traced!
     {
-        var response = await _httpClient.GetAsync("https://httpbin.org/get");
-        response.EnsureSuccessStatusCode();
+        var name = "Hello World";
+        Assert.Contains("Hello", name);
+    }
+}
+
+public class MoreTests
+{
+    [Fact]
+    public async Task WebTest() // ✅ This one too!
+    {
+        await Task.Delay(100);
+        Assert.True(true);
     }
 }
 ```
 
-## Documentation
+**🎉 Benefits:**
+- No need to add `[Trace]` to every test
+- All tests in all classes get tracked automatically
+- Great for existing projects - just add one line!
 
-- 📚 [Getting Started Guide](docs/getting-started.md)
-- 📖 [API Reference](docs/api-reference.md)
-- 💡 [Examples](docs/examples.md)
-- ⚙️ [Configuration](docs/configuration.md)
-- 🔧 [Troubleshooting](docs/troubleshooting.md)
+### Example 2: Trace Individual Tests
 
-## Key Components
-
-### TraceAttribute
-The main attribute for adding OpenTelemetry tracing to test methods:
+If you want to trace only specific tests:
 
 ```csharp
-[Fact]
-[Trace] // Automatically creates spans for this test
-public void MyTest()
-{
-    // Test code is automatically traced
-    // HTTP calls, database calls, etc. are captured
-}
-```
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using xUnit.OTel.Diagnostics;
+using xUnit.OTel.Attributes;
+using Xunit;
 
-### OTelConfigurationExtensions
-Service collection extensions for configuring OpenTelemetry:
+// First, set up the tracking system (required!)
+[assembly: AssemblyFixture(typeof(TestSetup))]
 
-```csharp
-services.AddOTelDiagnostics(
-    configureResourceBuilder: resource => resource.AddService("MyTestApp"),
-    configureTracerProviderBuilder: tracing => tracing.AddConsoleExporter(),
-    configureMeterProviderBuilder: metrics => metrics.AddConsoleExporter(),
-    configureLoggingBuilder: logging => logging.AddConsole()
-);
-```
-
-### TestFixture Integration
-Assembly-level test fixture for shared OpenTelemetry configuration:
-
-```csharp
-[assembly: AssemblyFixture(typeof(TestFixture))]
-
-public class TestFixture : IAsyncLifetime
+public class TestSetup : IAsyncLifetime
 {
     public IHost Host { get; private set; }
-    
+
     public async ValueTask InitializeAsync()
     {
-        Host = CreateHostWithOTel();
+        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
+            .ConfigureServices(services =>
+            {
+                // This is required for [Trace] to work! 🎯
+                services.AddOTelDiagnostics();
+            })
+            .Build();
+        
         await Host.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await Host.StopAsync();
+        Host.Dispose();
+    }
+}
+
+// Now your tests can use [Trace]
+public class SimpleTests
+{
+    [Fact]
+    [Trace] // 👈 Only this test gets traced
+    public void MyFirstTest()
+    {
+        // Your test is now being tracked!
+        var result = 2 + 2;
+        Assert.Equal(4, result);
+    }
+
+    [Fact]
+    public void MySecondTest() // This one is NOT traced
+    {
+        var result = 3 + 3;
+        Assert.Equal(6, result);
     }
 }
 ```
 
-## Advanced Usage
+**📝 Note:** The `[Trace]` attribute won't work without calling `services.AddOTelDiagnostics()` first!
 
-### Custom Configuration
+### Example 3: Testing Web Calls
+
+Want to see what happens when your code talks to the internet?
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using xUnit.OTel.Diagnostics;
+using xUnit.OTel.Attributes;
+using Xunit;
+
+// Trace everything!
+[assembly: Trace]
+[assembly: AssemblyFixture(typeof(TestSetup))]
+
+public class TestSetup : IAsyncLifetime
+{
+    public IHost Host { get; private set; }
+
+    public async ValueTask InitializeAsync()
+    {
+        // Create a mini-application for testing
+        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
+            .ConfigureServices(services =>
+            {
+                // Add the magic tracking ✨
+                services.AddOTelDiagnostics();
+                // Add ability to make web calls
+                services.AddHttpClient();
+            })
+            .Build();
+        
+        await Host.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Clean up when done
+        await Host.StopAsync();
+        Host.Dispose();
+    }
+}
+
+// Your actual tests
+public class WebTests
+{
+    private readonly HttpClient _httpClient;
+
+    public WebTests(TestSetup setup)
+    {
+        // Get the web caller from our setup
+        var factory = setup.Host.Services.GetRequiredService<IHttpClientFactory>();
+        _httpClient = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task TestGoogleIsWorking()
+    {
+        // This will show you:
+        // - When the call started
+        // - How long it took
+        // - If it worked or failed
+        var response = await _httpClient.GetAsync("https://www.google.com");
+        
+        Assert.True(response.IsSuccessStatusCode);
+    }
+}
+```
+
+## 🏠 Where Do The Traces Go?
+
+### Option 1: Console Output (Easy for Development)
+
+Your traces appear right in the test output:
 
 ```csharp
 services.AddOTelDiagnostics(
-    configureResourceBuilder: resource => 
+    configureTracerProviderBuilder: tracing => 
     {
-        resource.AddService("MyTestService", "1.0.0");
-        resource.AddAttributes(new[] 
-        {
-            new KeyValuePair<string, object>("environment", "test")
-        });
-    },
-    configureTracerProviderBuilder: tracing =>
-    {
-        tracing.AddJaegerExporter();
-        tracing.SetSampler(new TraceIdRatioBasedSampler(0.5));
+        tracing.AddConsoleExporter(); // 👈 Shows traces in console
     }
 );
 ```
 
-### HTTP Client Instrumentation
+### Option 2: OpenTelemetry Collector (For Real Projects)
 
-```csharp
-[Fact]
-[Trace]
-public async Task HttpClientTest()
-{
-    // HTTP calls are automatically instrumented
-    var response = await _httpClient.GetAsync("https://api.example.com/data");
-    
-    // Spans will include:
-    // - HTTP method, URL, status code
-    // - Request/response headers
-    // - Timing information
-    // - Error details if request fails
-}
+Think of the OpenTelemetry Collector as a post office that collects all your test information and sends it where you want:
+
+**Step 1: Run the Collector** (like starting the post office)
+
+```bash
+# Using Docker (easiest way)
+docker run -p 4317:4317 \
+  -v $(pwd)/otel-config.yaml:/etc/otel-collector-config.yaml \
+  otel/opentelemetry-collector:latest \
+  --config=/etc/otel-collector-config.yaml
 ```
 
-### Multiple Concurrent Requests
+**Step 2: Create a Simple Config** (`otel-config.yaml`)
+
+```yaml
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+exporters:
+  logging:
+    loglevel: debug
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [logging]
+```
+
+**Step 3: Tell Your Tests Where to Send Data**
 
 ```csharp
-[Fact]
-[Trace]
-public async Task ConcurrentRequestsTest()
-{
-    var urls = new[]
+services.AddOTelDiagnostics(
+    configureTracerProviderBuilder: tracing => 
     {
-        "https://api.example.com/endpoint1",
-        "https://api.example.com/endpoint2",
-        "https://api.example.com/endpoint3"
-    };
+        tracing.AddOtlpExporter(options =>
+        {
+            // Tell it where the collector is listening
+            options.Endpoint = new Uri("http://localhost:4317");
+        });
+    }
+);
+```
 
-    var tasks = urls.Select(url => _httpClient.GetAsync(url));
-    var responses = await Task.WhenAll(tasks);
-    
-    // Each HTTP call creates its own span
-    // All spans are correlated under the test span
+## 📊 What Can You See?
+
+When you run a test with tracing enabled, you'll see:
+
+```
+🧪 Test: MyFirstTest
+├── ⏱️ Started: 10:30:15.123
+├── ⏱️ Duration: 245ms
+├── ✅ Status: Passed
+├── 📍 Class: SimpleTests
+└── 📊 Details:
+    ├── 🌐 HTTP GET https://www.google.com (125ms)
+    ├── 💾 Database Query (50ms)
+    └── 🔄 Processing Data (70ms)
+```
+
+## 🎨 Real-World Example: Testing a Weather Service
+
+```csharp
+public class WeatherTests
+{
+    private readonly HttpClient _httpClient;
+
+    public WeatherTests(TestSetup setup)
+    {
+        var factory = setup.Host.Services.GetRequiredService<IHttpClientFactory>();
+        _httpClient = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task CheckTodaysWeather()
+    {
+        // Call 1: Get location
+        var locationResponse = await _httpClient.GetAsync("https://ipapi.co/json/");
+        var location = await locationResponse.Content.ReadAsStringAsync();
+        
+        // Call 2: Get weather for that location
+        var weatherResponse = await _httpClient.GetAsync($"https://wttr.in/London?format=j1");
+        
+        // The trace will show:
+        // - Both HTTP calls
+        // - How long each took
+        // - What data was sent/received
+        // - If anything failed
+        
+        Assert.True(weatherResponse.IsSuccessStatusCode);
+    }
 }
 ```
 
-## Requirements
+## 🤔 Common Questions
+
+### "Why do I need a Host?"
+Think of the Host as a mini-application that runs during your tests. It's like having a toy kitchen when you want to play cooking - you need the kitchen (Host) to use the stove (HTTP client) and other tools!
+
+The Host is also where the OpenTelemetry system lives - it's like the control room that watches and records everything.
+
+### "What's OpenTelemetry?"
+It's like a security camera system for your code. It watches what happens and tells you about it!
+
+### "Do I always need the Collector?"
+No! For simple testing, use `AddConsoleExporter()` to see traces right in your test output. The Collector is for when you want to send traces to special monitoring tools like Jaeger or Zipkin.
+
+### "Why doesn't [Trace] work by itself?"
+The `[Trace]` attribute is like a light switch - but first you need to install the electrical system (`AddOTelDiagnostics()`)! Without the setup, the switch has nothing to connect to.
+
+### "Should I use [assembly: Trace] or individual [Trace] attributes?"
+- Use `[assembly: Trace]` when you want to trace everything (recommended for most projects)
+- Use individual `[Trace]` attributes when you only want to trace specific tests
+
+## 📋 Requirements
 
 - .NET 8.0 or later
-- **xUnit v3 framework only** (not compatible with xUnit v2)
-- OpenTelemetry 1.9.0 or later
+- xUnit v3 (won't work with xUnit v2!)
 
-## Built-in Instrumentation
+## 🆘 Need Help?
 
-The library automatically includes instrumentation for:
+- 🐛 [Report Problems](https://github.com/mrviduus/xUnit.OTel/issues)
+- 💬 [Ask Questions](https://github.com/mrviduus/xUnit.OTel/discussions)
+- 📧 [Email Us](mailto:mrviduus@gmail.com)
 
-- **HTTP Client**: All HTTP requests are traced with detailed metadata
-- **SQL Client**: Database operations are captured (when SqlClient is used)
-- **gRPC Client**: gRPC calls are automatically instrumented  
-- **Process Metrics**: CPU, memory, and process-level metrics
-- **Runtime Metrics**: .NET GC, thread pool, and JIT metrics
-- **Custom Test Spans**: Each test method becomes a span with rich metadata
+## 🎉 Quick Wins
 
-## Trace Correlation
+1. **See test duration**: Know which tests are slow
+2. **Track HTTP calls**: See all web requests your test makes
+3. **Find failures**: Quickly see what went wrong
+4. **Understand flow**: See the order of operations
 
-Every test execution includes:
-- **Trace ID**: Unique identifier for the entire test trace
-- **Test Metadata**: Class name, method name, framework information
-- **Console Output**: Test output is captured and correlated with traces
-- **Child Spans**: HTTP calls, DB operations, etc. are child spans of the test
+## 📚 More Examples
 
-## Debug vs Release Builds
-
-- **Debug builds**: Include OTLP exporters for development/debugging
-- **Release builds**: Optimized configuration for CI/CD environments
-
-## Contributing
-
-Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) and submit pull requests to the `develop` branch.
+Check out our [examples folder](https://github.com/mrviduus/xUnit.OTel/tree/main/examples) for:
+- Testing with databases
+- Testing microservices
+- Complex scenarios
+- CI/CD integration
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-- 🐛 [Report Issues](https://github.com/mrviduus/xUnit.OTel/issues)
-- 💬 [Discussions](https://github.com/mrviduus/xUnit.OTel/discussions)
-- 📧 [Contact](mailto:mrviduus@gmail.com)
-
-## Acknowledgments
-
-- [OpenTelemetry](https://opentelemetry.io/) for the observability framework
-- [xUnit](https://xunit.net/) for the testing framework
-- The .NET community for continuous support and feedback

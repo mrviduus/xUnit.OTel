@@ -18,7 +18,7 @@ namespace xUnit.OTel.Tests;
 // Test fixture class that sets up OpenTelemetry diagnostics for the entire test assembly
 // This class implements IAsyncLifetime to properly manage setup and teardown of resources
 // It configures a host with dependency injection, OpenTelemetry, and HTTP client instrumentation
-public class TestFixture : IAsyncLifetime
+public class TestSetup : IAsyncLifetime
 {
     // Private field to store the application host that contains all configured services
     // The null-forgiving operator (!) indicates this will be initialized in InitializeAsync
@@ -62,7 +62,7 @@ public class TestFixture : IAsyncLifetime
 
         // Log the test run initialization using the configured logging system
         // This demonstrates that the logging integration is working correctly
-        var logger = _host.Services.GetRequiredService<ILogger<TestFixture>>();
+        var logger = _host.Services.GetRequiredService<ILogger<TestSetup>>();
         logger.LogInformation("OpenTelemetry diagnostics configured with HTTP client instrumentation");
 
     }
@@ -72,7 +72,7 @@ public class TestFixture : IAsyncLifetime
     public async ValueTask DisposeAsync()
     {
         // Log the disposal process to demonstrate logging works during teardown
-        var logger = _host.Services.GetRequiredService<ILogger<TestFixture>>();
+        var logger = _host.Services.GetRequiredService<ILogger<TestSetup>>();
         logger.LogInformation("Test fixture disposing...");
 
         // Gracefully stop the host and all its background services

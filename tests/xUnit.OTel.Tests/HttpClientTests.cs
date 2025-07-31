@@ -8,11 +8,11 @@ namespace xUnit.OTel.Tests;
 // Test class that uses the assembly fixture to demonstrate full OpenTelemetry integration
 // This class shows how to use dependency injection to get instrumented HTTP clients
 // All HTTP requests made through this client will be automatically traced
-public class HttpClientTests(TestFixture fixture)
+public class HttpClientTests(TestSetup setup)
 {
     // Private field to store the instrumented HTTP client for use in test methods
     // This client is configured with OpenTelemetry instrumentation through dependency injection
-    private readonly HttpClient _httpClient = fixture.GetRequiredService<IHttpClientFactory>().CreateClient();
+    private readonly HttpClient _httpClient = setup.GetRequiredService<IHttpClientFactory>().CreateClient();
 
 
     // Test method that demonstrates HTTP GET request tracing with OpenTelemetry
