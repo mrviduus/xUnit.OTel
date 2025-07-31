@@ -33,22 +33,18 @@ public class TestFixture : IAsyncLifetime
     // This method configures the application host with all necessary services for testing
     public async ValueTask InitializeAsync()
     {
+        // Create a lightweight application builder without full hosting overhead
+        var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
 
-        // Create and configure the application host using the default builder pattern
-        _host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
-            // Configure the dependency injection container with required services
-            .ConfigureServices(services =>
-            {
-                // Add OpenTelemetry diagnostics with default configuration
-                // This sets up tracing, metrics, and logging for the test environment
-                services.AddOTelDiagnostics();
+        // Configure the dependency injection container with required services
+        builder.Services.AddOTelDiagnostics();
 
-                // Add HttpClient for testing HTTP instrumentation
-                // This registers IHttpClientFactory and enables HTTP request tracing
-                services.AddHttpClient();
-            })
-            // Build the configured host instance
-            .Build();
+        // Add HttpClient for testing HTTP instrumentation
+        // This registers IHttpClientFactory and enables HTTP request tracing
+        builder.Services.AddHttpClient();
+
+        // Build the configured host instance
+        _host = builder.Build();
 
         // Start the host to initialize all services and begin background services
         await _host.StartAsync();
@@ -57,6 +53,7 @@ public class TestFixture : IAsyncLifetime
         // This demonstrates that the logging integration is working correctly
         var logger = _host.Services.GetRequiredService<ILogger<TestFixture>>();
         logger.LogInformation("OpenTelemetry diagnostics configured with HTTP client instrumentation");
+
     }
 
     // Async disposal method called once after all tests in the assembly complete
