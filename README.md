@@ -1,7 +1,7 @@
 # xUnit.OTel
 
 <p align="center">
-  <img src="icon.svg" alt="xUnit.OTel Logo" width="128" height="128">
+  <img src="assets/images/icon.svg" alt="xUnit.OTel Logo" width="128" height="128">
 </p>
 
 [![Build Status](https://github.com/mrviduus/xUnit.OTel/workflows/Build%20and%20Test/badge.svg)](https://github.com/mrviduus/xUnit.OTel/actions)
