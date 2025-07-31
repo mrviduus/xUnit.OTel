@@ -18,10 +18,6 @@ using OpenTelemetry.Trace;
 using xUnit.OTel.Logging;
 // Import custom processors for OpenTelemetry data processing
 using xUnit.OTel.Processors;
-// Import xUnit framework interfaces
-using Xunit;
-// Import xUnit v3 framework interfaces
-using Xunit.v3;
 
 // Define the namespace for OpenTelemetry configuration extensions
 namespace xUnit.OTel.Diagnostics;
@@ -123,13 +119,6 @@ public static class OTelConfigurationExtensions
             .AddProcessInstrumentation()
             // Add .NET runtime instrumentation to collect GC, thread pool, and JIT metrics
             .AddRuntimeInstrumentation();
-
-// Only add OTLP exporter in debug builds to avoid unnecessary overhead in production
-#if DEBUG
-        // Add OpenTelemetry Protocol (OTLP) exporter for sending metrics to telemetry backends
-        metrics.AddOtlpExporter();
-#endif
-
     }
 
     // Private extension method that configures default distributed tracing for xUnit.OTel
@@ -153,12 +142,6 @@ public static class OTelConfigurationExtensions
             .AddSource(sourceName)
             // Add custom processor to inject test run ID into all activities
             .AddProcessor(new TestRunIdProcessor());
-
-// Only add OTLP exporter in debug builds to avoid overhead in CI/CD pipelines
-#if DEBUG
-        // Add OpenTelemetry Protocol (OTLP) exporter for sending traces to telemetry backends
-        tracing.AddOtlpExporter();
-#endif
 
     }
 
@@ -187,10 +170,6 @@ public static class OTelConfigurationExtensions
                 // Add custom processor to attach log entries as events to the current activity
                 options.AddProcessor(new ActivityEventLogProcessor());
                 // Only add OTLP exporter in debug builds to reduce overhead in production tests
-#if DEBUG
-                // Add OpenTelemetry Protocol (OTLP) exporter for sending logs to telemetry backends
-                options.AddOtlpExporter();
-#endif
             });
 
             // Add debug logging provider for development scenarios

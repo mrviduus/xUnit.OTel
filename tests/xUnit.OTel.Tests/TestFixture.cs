@@ -4,6 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 // Import Microsoft logging framework for logging services
 using Microsoft.Extensions.Logging;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
+
+
 // Import custom OpenTelemetry diagnostics extensions
 using xUnit.OTel.Diagnostics;
 // Import xUnit framework for test infrastructure
@@ -37,7 +42,11 @@ public class TestFixture : IAsyncLifetime
         var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
 
         // Configure the dependency injection container with required services
-        builder.Services.AddOTelDiagnostics();
+        builder.Services.AddOTelDiagnostics(
+            configureMeterProviderBuilder: m => m.AddOtlpExporter(),
+            configureTracerProviderBuilder: t => t.AddOtlpExporter(),
+            configureLoggingBuilder: options => options.AddOpenTelemetry(o =>o.AddOtlpExporter())
+        );
 
         // Add HttpClient for testing HTTP instrumentation
         // This registers IHttpClientFactory and enables HTTP request tracing
