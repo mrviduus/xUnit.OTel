@@ -11,12 +11,6 @@ using OpenTelemetry.Trace;
 
 // Import custom OpenTelemetry diagnostics extensions
 using xUnit.OTel.Diagnostics;
-// Import xUnit framework for test infrastructure
-using Xunit;
-
-// Assembly-level attribute that registers this test fixture to be shared across all tests in the assembly
-// This ensures that the OpenTelemetry configuration is set up once and reused for all tests
-[assembly: AssemblyFixture(typeof(xUnit.OTel.Tests.TestFixture))]
 
 // Define the namespace for test infrastructure
 namespace xUnit.OTel.Tests;
@@ -34,6 +28,14 @@ public class TestFixture : IAsyncLifetime
     // This allows tests to access services like IHttpClientFactory through dependency injection
     public IHost Host => _host;
 
+    // Helper method to get required services from the dependency injection container
+    // This provides a convenient way for test classes to access registered services
+    // Example usage: var httpClient = testFixture.GetRequiredService<IHttpClientFactory>().CreateClient();
+    public T GetRequiredService<T>() where T : notnull
+    {
+        return _host.Services.GetRequiredService<T>();
+    }
+
     // Async initialization method called once before any tests in the assembly run
     // This method configures the application host with all necessary services for testing
     public async ValueTask InitializeAsync()
@@ -45,7 +47,7 @@ public class TestFixture : IAsyncLifetime
         builder.Services.AddOTelDiagnostics(
             configureMeterProviderBuilder: m => m.AddOtlpExporter(),
             configureTracerProviderBuilder: t => t.AddOtlpExporter(),
-            configureLoggingBuilder: options => options.AddOpenTelemetry(o =>o.AddOtlpExporter())
+            configureLoggingBuilder: options => options.AddOpenTelemetry(o => o.AddOtlpExporter())
         );
 
         // Add HttpClient for testing HTTP instrumentation
@@ -75,7 +77,7 @@ public class TestFixture : IAsyncLifetime
 
         // Gracefully stop the host and all its background services
         await _host.StopAsync();
-        
+
         // Dispose of the host to free all resources and complete cleanup
         _host.Dispose();
     }
