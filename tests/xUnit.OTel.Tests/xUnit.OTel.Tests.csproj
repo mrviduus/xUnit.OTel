@@ -14,14 +14,6 @@
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.v3.extensibility.core" />
     <PackageReference Include="xunit.v3.common" />
-    <PackageReference Include="coverlet.collector">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="OpenTelemetry" />
-    <PackageReference Include="OpenTelemetry.Api" />
   </ItemGroup>
 
   <ItemGroup>
