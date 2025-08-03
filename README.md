@@ -56,6 +56,10 @@ Want to track every single test without adding `[Trace]` to each one? Here's the
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using xUnit.OTel.Diagnostics;
 using xUnit.OTel.Attributes;
 using Xunit;
@@ -66,27 +70,50 @@ using Xunit;
 // You still need the setup
 [assembly: AssemblyFixture(typeof(TestSetup))]
 
+// Define the namespace for test infrastructure
+namespace xUnit.OTel.Tests;
+
+// Test fixture class that sets up OpenTelemetry diagnostics for the entire test assembly
 public class TestSetup : IAsyncLifetime
 {
-    public IHost Host { get; private set; }
+    private IHost _host = null!;
+
+    public IHost Host => _host;
+
+    public T GetRequiredService<T>() where T : notnull
+    {
+        return _host.Services.GetRequiredService<T>();
+    }
 
     public async ValueTask InitializeAsync()
     {
-        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
-            .ConfigureServices(services =>
-            {
-                // Required for tracing to work
-                services.AddOTelDiagnostics();
-            })
-            .Build();
-        
-        await Host.StartAsync();
+        // Create a lightweight application builder without full hosting overhead
+        var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
+
+        // Configure the dependency injection container with required services
+        builder.Services.AddOTelDiagnostics(
+            configureMeterProviderBuilder: m => m.AddOtlpExporter(),
+            configureTracerProviderBuilder: t => t.AddOtlpExporter(),
+            configureLoggingBuilder: options => options.AddOpenTelemetry(o => o.AddOtlpExporter())
+        );
+
+        // Add HttpClient for testing HTTP instrumentation
+        builder.Services.AddHttpClient();
+
+        _host = builder.Build();
+        await _host.StartAsync();
+
+        var logger = _host.Services.GetRequiredService<ILogger<TestSetup>>();
+        logger.LogInformation("OpenTelemetry diagnostics configured with HTTP client instrumentation");
     }
 
     public async ValueTask DisposeAsync()
     {
-        await Host.StopAsync();
-        Host.Dispose();
+        var logger = _host.Services.GetRequiredService<ILogger<TestSetup>>();
+        logger.LogInformation("Test fixture disposing...");
+
+        await _host.StopAsync();
+        _host.Dispose();
     }
 }
 
@@ -108,13 +135,28 @@ public class MyTests
     }
 }
 
-public class MoreTests
+// Test class that demonstrates HTTP client instrumentation
+public class WebTests
 {
-    [Fact]
-    public async Task WebTest() // ✅ This one too!
+    private readonly HttpClient _httpClient;
+
+    public WebTests(TestSetup setup)
     {
-        await Task.Delay(100);
-        Assert.True(true);
+        // Get the web caller from our setup
+        var factory = setup.Host.Services.GetRequiredService<IHttpClientFactory>();
+        _httpClient = factory.CreateClient();
+    }
+
+    [Fact] // ✅ This one too!
+    public async Task TestGoogleIsWorking()
+    {
+        // This will show you:
+        // - When the call started
+        // - How long it took
+        // - If it worked or failed
+        var response = await _httpClient.GetAsync("https://www.google.com", TestContext.Current.CancellationToken);
+        
+        Assert.True(response.IsSuccessStatusCode);
     }
 }
 ```
@@ -131,6 +173,10 @@ If you want to trace only specific tests:
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using xUnit.OTel.Diagnostics;
 using xUnit.OTel.Attributes;
 using Xunit;
@@ -138,27 +184,46 @@ using Xunit;
 // First, set up the tracking system (required!)
 [assembly: AssemblyFixture(typeof(TestSetup))]
 
+namespace xUnit.OTel.Tests;
+
 public class TestSetup : IAsyncLifetime
 {
-    public IHost Host { get; private set; }
+    private IHost _host = null!;
+
+    public IHost Host => _host;
+
+    public T GetRequiredService<T>() where T : notnull
+    {
+        return _host.Services.GetRequiredService<T>();
+    }
 
     public async ValueTask InitializeAsync()
     {
-        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
-            .ConfigureServices(services =>
-            {
-                // This is required for [Trace] to work! 🎯
-                services.AddOTelDiagnostics();
-            })
-            .Build();
-        
-        await Host.StartAsync();
+        var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
+
+        // This is required for [Trace] to work! 🎯
+        builder.Services.AddOTelDiagnostics(
+            configureMeterProviderBuilder: m => m.AddOtlpExporter(),
+            configureTracerProviderBuilder: t => t.AddOtlpExporter(),
+            configureLoggingBuilder: options => options.AddOpenTelemetry(o => o.AddOtlpExporter())
+        );
+
+        builder.Services.AddHttpClient();
+
+        _host = builder.Build();
+        await _host.StartAsync();
+
+        var logger = _host.Services.GetRequiredService<ILogger<TestSetup>>();
+        logger.LogInformation("OpenTelemetry diagnostics configured with HTTP client instrumentation");
     }
 
     public async ValueTask DisposeAsync()
     {
-        await Host.StopAsync();
-        Host.Dispose();
+        var logger = _host.Services.GetRequiredService<ILogger<TestSetup>>();
+        logger.LogInformation("Test fixture disposing...");
+
+        await _host.StopAsync();
+        _host.Dispose();
     }
 }
 
@@ -192,6 +257,10 @@ Want to see what happens when your code talks to the internet?
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using xUnit.OTel.Diagnostics;
 using xUnit.OTel.Attributes;
 using Xunit;
@@ -200,35 +269,52 @@ using Xunit;
 [assembly: Trace]
 [assembly: AssemblyFixture(typeof(TestSetup))]
 
+namespace xUnit.OTel.Tests;
+
 public class TestSetup : IAsyncLifetime
 {
-    public IHost Host { get; private set; }
+    private IHost _host = null!;
+
+    public IHost Host => _host;
+
+    public T GetRequiredService<T>() where T : notnull
+    {
+        return _host.Services.GetRequiredService<T>();
+    }
 
     public async ValueTask InitializeAsync()
     {
-        // Create a mini-application for testing
-        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
-            .ConfigureServices(services =>
-            {
-                // Add the magic tracking ✨
-                services.AddOTelDiagnostics();
-                // Add ability to make web calls
-                services.AddHttpClient();
-            })
-            .Build();
-        
-        await Host.StartAsync();
+        // Create a lightweight application builder without full hosting overhead
+        var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
+
+        // Configure the dependency injection container with required services
+        builder.Services.AddOTelDiagnostics(
+            configureMeterProviderBuilder: m => m.AddOtlpExporter(),
+            configureTracerProviderBuilder: t => t.AddOtlpExporter(),
+            configureLoggingBuilder: options => options.AddOpenTelemetry(o => o.AddOtlpExporter())
+        );
+
+        // Add HttpClient for testing HTTP instrumentation
+        builder.Services.AddHttpClient();
+
+        _host = builder.Build();
+        await _host.StartAsync();
+
+        var logger = _host.Services.GetRequiredService<ILogger<TestSetup>>();
+        logger.LogInformation("OpenTelemetry diagnostics configured with HTTP client instrumentation");
     }
 
     public async ValueTask DisposeAsync()
     {
-        // Clean up when done
-        await Host.StopAsync();
-        Host.Dispose();
+        var logger = _host.Services.GetRequiredService<ILogger<TestSetup>>();
+        logger.LogInformation("Test fixture disposing...");
+
+        await _host.StopAsync();
+        _host.Dispose();
     }
 }
 
-// Your actual tests
+// Test class that demonstrates full OpenTelemetry integration
 public class WebTests
 {
     private readonly HttpClient _httpClient;
@@ -247,7 +333,7 @@ public class WebTests
         // - When the call started
         // - How long it took
         // - If it worked or failed
-        var response = await _httpClient.GetAsync("https://www.google.com");
+        var response = await _httpClient.GetAsync("https://www.google.com", TestContext.Current.CancellationToken);
         
         Assert.True(response.IsSuccessStatusCode);
     }
@@ -318,9 +404,9 @@ services.AddOTelDiagnostics(
 );
 ```
 
-## � Viewing the Data of Tests
+## Viewing the Data of Tests
 
-The `xUnit.OTel` package contains a `hostBuilder` that, when configured with OTLP exporters, outputs span data via gRPC to `localhost:4317` by default. To visualize this telemetry data, you can use the **Aspire Dashboard** which provides a user-friendly interface for viewing traces, metrics, and logs.
+The `xUnit.OTel` package, when configured with OTLP exporters as shown in the example below, outputs span data via gRPC to `localhost:4317`. To visualize this telemetry data, you can use the **Aspire Dashboard** which provides a user-friendly interface for viewing traces, metrics, and logs.
 
 ### Using Aspire Dashboard with Docker
 
@@ -397,12 +483,17 @@ When you run a test with tracing enabled, you'll see:
 ## 🎨 Real-World Example: Testing a Weather Service
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+
+namespace xUnit.OTel.Tests;
+
 public class WeatherTests
 {
     private readonly HttpClient _httpClient;
 
     public WeatherTests(TestSetup setup)
     {
+        // Get the web caller from our setup
         var factory = setup.Host.Services.GetRequiredService<IHttpClientFactory>();
         _httpClient = factory.CreateClient();
     }
@@ -411,11 +502,11 @@ public class WeatherTests
     public async Task CheckTodaysWeather()
     {
         // Call 1: Get location
-        var locationResponse = await _httpClient.GetAsync("https://ipapi.co/json/");
+        var locationResponse = await _httpClient.GetAsync("https://ipapi.co/json/", TestContext.Current.CancellationToken);
         var location = await locationResponse.Content.ReadAsStringAsync();
         
         // Call 2: Get weather for that location
-        var weatherResponse = await _httpClient.GetAsync($"https://wttr.in/London?format=j1");
+        var weatherResponse = await _httpClient.GetAsync($"https://wttr.in/London?format=j1", TestContext.Current.CancellationToken);
         
         // The trace will show:
         // - Both HTTP calls
