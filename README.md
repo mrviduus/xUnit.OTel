@@ -91,106 +91,7 @@ docker run -it -p 18888:18888 -p 4317:18889 -d -e DOTNET_DASHBOARD_UNSECURED_ALL
 
 Then navigate to **http://localhost:18888** to access the dashboard.
 
-### Example Configuration
 
-Here's an example of how to configure your tests with the basic OTLP exporters (this sends data to the default `localhost:4317`):
-
-```csharp
-public async ValueTask InitializeAsync()
-{
-    // Create a lightweight application builder without full hosting overhead
-    var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
-
-    // Configure the dependency injection container with required services
-    builder.Services.AddOTelDiagnostics(
-        configureMeterProviderBuilder: m => m.AddOtlpExporter(),
-        configureTracerProviderBuilder: t => t.AddOtlpExporter(),
-        configureLoggingBuilder: options => options.AddOpenTelemetry(o => o.AddOtlpExporter())
-    );
-
-    // Add HttpClient for testing HTTP instrumentation
-    // This registers IHttpClientFactory and enables HTTP request tracing
-    builder.Services.AddHttpClient();
-
-    // Build the configured host instance
-    _host = builder.Build();
-
-    // Start the host to initialize all services and begin background services
-    await _host.StartAsync();
-
-    // Log the test run initialization using the configured logging system
-    // This demonstrates that the logging integration is working correctly
-    var logger = _host.Services.GetRequiredService<ILogger<TestSetup>>();
-    logger.LogInformation("OpenTelemetry diagnostics configured with HTTP client instrumentation");
-}
-```
-
-**Note:** The configuration above uses the default OTLP endpoint (`localhost:4317`). The Docker command maps the dashboard's internal port to a different host port, but your tests will still work with the default configuration.
-```
-
-### What You'll See in the Dashboard
-
-The Aspire Dashboard provides several views for your test data:
-
-- **🔍 Traces**: See the complete flow of your test execution, including HTTP calls, database operations, and custom spans
-- **📊 Metrics**: View performance metrics and counters from your tests
-- **📝 Logs**: Browse structured logs generated during test execution
-- **🏗️ Resources**: Monitor the health and status of your test components
-
-## �📊 What Can You See?
-
-When you run a test with tracing enabled, you'll see:
-
-```
-🧪 Test: MyFirstTest
-├── ⏱️ Started: 10:30:15.123
-├── ⏱️ Duration: 245ms
-├── ✅ Status: Passed
-├── 📍 Class: SimpleTests
-└── 📊 Details:
-    ├── 🌐 HTTP GET https://www.google.com (125ms)
-    ├── 💾 Database Query (50ms)
-    └── 🔄 Processing Data (70ms)
-```
-
-## 🎨 Real-World Example: Testing a Weather Service
-
-```csharp
-using Microsoft.Extensions.DependencyInjection;
-
-namespace xUnit.OTel.Tests;
-
-public class WeatherTests
-{
-    private readonly HttpClient _httpClient;
-
-    public WeatherTests(TestSetup setup)
-    {
-        // Get the web caller from our setup
-        var factory = setup.Host.Services.GetRequiredService<IHttpClientFactory>();
-        _httpClient = factory.CreateClient();
-    }
-
-    [Fact]
-    public async Task CheckTodaysWeather()
-    {
-        // Call 1: Get location
-        var locationResponse = await _httpClient.GetAsync("https://ipapi.co/json/", TestContext.Current.CancellationToken);
-        var location = await locationResponse.Content.ReadAsStringAsync();
-        
-        // Call 2: Get weather for that location
-        var weatherResponse = await _httpClient.GetAsync($"https://wttr.in/London?format=j1", TestContext.Current.CancellationToken);
-        
-        // The trace will show:
-        // - Both HTTP calls
-        // - How long each took
-        // - What data was sent/received
-        // - If anything failed
-        
-        Assert.True(weatherResponse.IsSuccessStatusCode);
-    }
-}
-```
 
 ## 🤔 Common Questions
 
@@ -220,7 +121,6 @@ The `[Trace]` attribute is like a light switch - but first you need to install t
 ## 🆘 Need Help?
 
 - 🐛 [Report Problems](https://github.com/mrviduus/xUnit.OTel/issues)
-- 💬 [Ask Questions](https://github.com/mrviduus/xUnit.OTel/discussions)
 - 📧 [Email Us](mailto:mrviduus@gmail.com)
 
 ## 🎉 Quick Wins
