@@ -23,6 +23,12 @@ Imagine you're playing with toys and want to know:
 
 This tool does the same for your code tests!
 
+**🚀 Key Features:**
+- **📺 Built-in Test Output**: All telemetry logs appear directly in your test output by default - no extra setup needed!
+- **🔍 HTTP Request Tracing**: See every web call your tests make with timing and response details
+- **⚡ Zero Configuration**: Works out of the box with minimal setup
+- **🎯 Flexible Tracing**: Trace all tests or just specific ones with attributes
+
 ## 📦 Installation
 
 Add it to your project:
@@ -30,6 +36,16 @@ Add it to your project:
 ```bash
 dotnet add package xUnit.OTel
 ```
+
+## 📺 See Your Tests in Action
+
+**The best part?** All telemetry data appears directly in your test output by default! No need for external dashboards or complex setup - everything you need is right there in your test results.
+
+<p align="center">
+  <img src="assets/images/output.png" alt="Test Output Example" width="800">
+</p>
+
+As you can see above, HTTP requests, timing information, and trace IDs are automatically logged to your test output, making debugging and understanding your tests incredibly easy!
 
 ## 🚀 Super Simple Examples
 
@@ -302,7 +318,67 @@ services.AddOTelDiagnostics(
 );
 ```
 
-## 📊 What Can You See?
+## � Viewing the Data of Tests
+
+The `xUnit.OTel` package contains a `hostBuilder` that, when configured with OTLP exporters, outputs span data via gRPC to `localhost:4317` by default. To visualize this telemetry data, you can use the **Aspire Dashboard** which provides a user-friendly interface for viewing traces, metrics, and logs.
+
+### Using Aspire Dashboard with Docker
+
+Run the Aspire Dashboard in a Docker container to view your test telemetry:
+
+```bash
+docker run -it -p 18888:18888 -p 4317:18889 -d -e DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true --name aspire-dashboard mcr.microsoft.com/dotnet/nightly/aspire-dashboard:8.0.0
+```
+
+Then navigate to **http://localhost:18888** to access the dashboard.
+
+### Example Configuration
+
+Here's an example of how to configure your tests with the basic OTLP exporters (this sends data to the default `localhost:4317`):
+
+```csharp
+public async ValueTask InitializeAsync()
+{
+    // Create a lightweight application builder without full hosting overhead
+    var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
+
+    // Configure the dependency injection container with required services
+    builder.Services.AddOTelDiagnostics(
+        configureMeterProviderBuilder: m => m.AddOtlpExporter(),
+        configureTracerProviderBuilder: t => t.AddOtlpExporter(),
+        configureLoggingBuilder: options => options.AddOpenTelemetry(o => o.AddOtlpExporter())
+    );
+
+    // Add HttpClient for testing HTTP instrumentation
+    // This registers IHttpClientFactory and enables HTTP request tracing
+    builder.Services.AddHttpClient();
+
+    // Build the configured host instance
+    _host = builder.Build();
+
+    // Start the host to initialize all services and begin background services
+    await _host.StartAsync();
+
+    // Log the test run initialization using the configured logging system
+    // This demonstrates that the logging integration is working correctly
+    var logger = _host.Services.GetRequiredService<ILogger<TestSetup>>();
+    logger.LogInformation("OpenTelemetry diagnostics configured with HTTP client instrumentation");
+}
+```
+
+**Note:** The configuration above uses the default OTLP endpoint (`localhost:4317`). The Docker command maps the dashboard's internal port to a different host port, but your tests will still work with the default configuration.
+```
+
+### What You'll See in the Dashboard
+
+The Aspire Dashboard provides several views for your test data:
+
+- **🔍 Traces**: See the complete flow of your test execution, including HTTP calls, database operations, and custom spans
+- **📊 Metrics**: View performance metrics and counters from your tests
+- **📝 Logs**: Browse structured logs generated during test execution
+- **🏗️ Resources**: Monitor the health and status of your test components
+
+## �📊 What Can You See?
 
 When you run a test with tracing enabled, you'll see:
 
