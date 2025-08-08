@@ -39,7 +39,7 @@
     Stop the running container
     
 .NOTES
-    Author: xUnit.OTel Project
+    Author: xUnitOTel Project
     Requires: Docker or Podman
 #>
 

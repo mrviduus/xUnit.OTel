@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Text;
 
 // Define the namespace for logger implementation
-namespace xUnit.OTel.Logging;
+namespace xUnitOTel.Logging;
 
 // Logger implementation that writes log entries to xUnit test output
 // This class integrates with the .NET logging framework while directing output to xUnit's test output system

@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\xUnit.OTel\xUnit.OTel.csproj" />
+    <ProjectReference Include="..\..\src\xUnitOTel\xUnitOTel.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 
 // Define the namespace for logging provider implementation
-namespace xUnit.OTel.Logging;
+namespace xUnitOTel.Logging;
 
 // Partial class that implements ILoggerProvider for xUnit test output integration
 // This provider creates and manages XunitLogger instances that write to xUnit test output

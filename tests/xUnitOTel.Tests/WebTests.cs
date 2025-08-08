@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 
 // Define the namespace for test classes
-namespace xUnit.OTel.Tests;
+namespace xUnitOTel.Tests;
 
 // Test class that uses the assembly fixture to demonstrate full OpenTelemetry integration
 // This class shows how to use dependency injection to get instrumented HTTP clients

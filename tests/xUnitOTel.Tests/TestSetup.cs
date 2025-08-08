@@ -10,10 +10,10 @@ using OpenTelemetry.Trace;
 
 
 // Import custom OpenTelemetry diagnostics extensions
-using xUnit.OTel.Diagnostics;
+using xUnitOTel.Diagnostics;
 
 // Define the namespace for test infrastructure
-namespace xUnit.OTel.Tests;
+namespace xUnitOTel.Tests;
 
 // Test fixture class that sets up OpenTelemetry diagnostics for the entire test assembly
 // This class implements IAsyncLifetime to properly manage setup and teardown of resources

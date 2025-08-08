@@ -1,6 +1,6 @@
-# Contributing to xUnit.OTel
+# Contributing to xUnitOTel
 
-Thank you for your interest in contributing to xUnit.OTel! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to xUnitOTel! This document provides guidelines and information for contributors.
 
 ## Code of Conduct
 
@@ -43,8 +43,8 @@ Feature requests are welcome! Please:
 
 1. **Fork the repository**
    ```bash
-   git clone https://github.com/[your-username]/xUnit.OTel.git
-   cd xUnit.OTel
+   git clone https://github.com/[your-username]/xUnitOTel.git
+   cd xUnitOTel
    ```
 
 2. **Create a feature branch**
@@ -66,11 +66,11 @@ Feature requests are welcome! Please:
 #### Project Structure
 
 ```
-xUnit.OTel/
-├── src/
-│   └── xUnit.OTel/           # Main library
-├── test/
-│   └── xUnit.OTel.Tests/     # Unit tests
+xUnitOTel/
+│── src/
+│   └── xUnitOTel/           # Main library
+│── tests/
+│   └── xUnitOTel.Tests/     # Unit tests
 ├── samples/
 │   └── BasicUsage/           # Usage examples
 ├── docs/                     # Documentation
@@ -192,7 +192,7 @@ public void StartTest_WithValidName_CreatesActivity()
 Releases are automated through GitHub Actions when tags are created:
 
 1. **Version Bump**
-   - Update version in `xUnit.OTel.csproj`
+   - Update version in `xUnitOTel.csproj`
    - Update CHANGELOG.md
    - Commit changes
 
@@ -271,4 +271,4 @@ Contributors will be recognized in:
 - GitHub contributor graphs
 - Special recognition for significant contributions
 
-Thank you for contributing to xUnit.OTel! 🎉
+Thank you for contributing to xUnitOTel! 🎉

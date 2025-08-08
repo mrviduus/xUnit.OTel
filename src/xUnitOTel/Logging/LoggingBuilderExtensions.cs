@@ -7,10 +7,10 @@ using Microsoft.Extensions.Logging;
 // Import Microsoft options pattern for configuration
 using Microsoft.Extensions.Options;
 // Import the logging namespace to access logging-related classes
-using xUnit.OTel.Logging;
+using xUnitOTel.Logging;
 
 // Define the namespace for logging extensions
-namespace xUnit.OTel.Logging;
+namespace xUnitOTel.Logging;
 
 // Static class containing extension methods for configuring xUnit output logging
 // These extensions provide a fluent API for integrating xUnit test output with the .NET logging framework

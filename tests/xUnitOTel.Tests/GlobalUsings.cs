@@ -1,6 +1,6 @@
 global using Xunit;
-using xUnit.OTel.Attributes;
-using xUnit.OTel.Tests;
+using xUnitOTel.Attributes;
+using xUnitOTel.Tests;
 [assembly: AssemblyFixture(typeof(TestSetup))]
 [assembly: Trace]
 [assembly: CaptureConsole]

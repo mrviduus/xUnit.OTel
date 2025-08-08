@@ -3,14 +3,14 @@ using System.Diagnostics;
 // Import System.Reflection for MethodInfo class
 using System.Reflection;
 // Import custom diagnostics functionality for OpenTelemetry integration
-using xUnit.OTel.Diagnostics;
+using xUnitOTel.Diagnostics;
 // Import xUnit internal functionality for console capture
 using Xunit.Internal;
 // Import xUnit v3 framework interfaces and classes
 using Xunit.v3;
 
 // Define the namespace for xUnit OpenTelemetry attributes
-namespace xUnit.OTel.Attributes;
+namespace xUnitOTel.Attributes;
 // Define a custom attribute that extends BeforeAfterTestAttribute to add tracing capabilities
 public class TraceAttribute : BeforeAfterTestAttribute
 {

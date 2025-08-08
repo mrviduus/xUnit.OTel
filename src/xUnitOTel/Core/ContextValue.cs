@@ -4,7 +4,7 @@ using Xunit;
 using Xunit.v3;
 
 // Define the namespace for core xUnit OpenTelemetry functionality
-namespace xUnit.OTel.Core;
+namespace xUnitOTel.Core;
 
 // Generic class for managing context-aware values using AsyncLocal storage
 // This class provides a thread-safe way to store and retrieve values that are scoped to the current async context

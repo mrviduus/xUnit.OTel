@@ -4,7 +4,7 @@ using System.Diagnostics;
 using OpenTelemetry;
 
 // Define the namespace for OpenTelemetry processors
-namespace xUnit.OTel.Processors;
+namespace xUnitOTel.Processors;
 
 // Processor class that adds a unique test run identifier to all activities
 // This processor extends BaseProcessor<Activity> to automatically tag activities with test run information

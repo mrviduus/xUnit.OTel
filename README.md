@@ -1,12 +1,12 @@
-# xUnit.OTel
+# xUnitOTel
 
 <p align="center">
-  <img src="assets/images/icon.svg" alt="xUnit.OTel Logo" width="128" height="128">
+  <img src="assets/images/icon.svg" alt="xUnitOTel Logo" width="128" height="128">
 </p>
 
-[![Build Status](https://github.com/mrviduus/xUnit.OTel/workflows/Build%20and%20Test/badge.svg)](https://github.com/mrviduus/xUnit.OTel/actions)
-[![NuGet Version](https://img.shields.io/nuget/v/xUnit.OTel.svg)](https://www.nuget.org/packages/xUnit.OTel/)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/xUnit.OTel.svg)](https://www.nuget.org/packages/xUnit.OTel/)
+[![Build Status](https://github.com/mrviduus/xUnitOTel/workflows/Build%20and%20Test/badge.svg)](https://github.com/mrviduus/xUnitOTel/actions)
+[![NuGet Version](https://img.shields.io/nuget/v/xUnitOTel.svg)](https://www.nuget.org/packages/xUnitOTel/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/xUnitOTel.svg)](https://www.nuget.org/packages/xUnitOTel/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **🎯 What is this?** A tool that helps you see what your tests are doing, like a camera that records everything happening inside your tests!
@@ -34,7 +34,7 @@ This tool does the same for your code tests!
 Add it to your project:
 
 ```bash
-dotnet add package xUnit.OTel
+dotnet add package xUnitOTel
 ```
 
 ## 📺 See Your Tests in Action
@@ -57,10 +57,10 @@ As you can see above, HTTP requests, timing information, and trace IDs are autom
 ```
 
 ### Step 2: Create TestSetup
-See our complete working example in [tests/xUnit.OTel.Tests/TestSetup.cs](tests/xUnit.OTel.Tests/TestSetup.cs)
+See our complete working example in [tests/xUnitOTel.Tests/TestSetup.cs](tests/xUnitOTel.Tests/TestSetup.cs)
 
 ### Step 3: Write Tests
-See our HTTP client testing example in [tests/xUnit.OTel.Tests/WebTests.cs](tests/xUnit.OTel.Tests/WebTests.cs)
+See our HTTP client testing example in [tests/xUnitOTel.Tests/WebTests.cs](tests/xUnitOTel.Tests/WebTests.cs)
 
 **That's it!** Your tests will now show telemetry data in the output.
 ```
@@ -79,7 +79,7 @@ If you want to trace only specific tests, use the `[Trace]` attribute on individ
 
 ## Viewing the Data of Tests
 
-The `xUnit.OTel` package, when configured with OTLP exporters as shown in the example below, outputs span data via gRPC to `localhost:4317`. To visualize this telemetry data, you can use the **Aspire Dashboard** which provides a user-friendly interface for viewing traces, metrics, and logs.
+The `xUnitOTel` package, when configured with OTLP exporters as shown in the example below, outputs span data via gRPC to `localhost:4317`. To visualize this telemetry data, you can use the **Aspire Dashboard** which provides a user-friendly interface for viewing traces, metrics, and logs.
 
 ### Using Aspire Dashboard with Docker
 
@@ -120,7 +120,7 @@ The `[Trace]` attribute is like a light switch - but first you need to install t
 
 ## 🆘 Need Help?
 
-- 🐛 [Report Problems](https://github.com/mrviduus/xUnit.OTel/issues)
+- 🐛 [Report Problems](https://github.com/mrviduus/xUnitOTel/issues)
 - 📧 [Email Us](mailto:mrviduus@gmail.com)
 
 ## 🎉 Quick Wins
@@ -132,7 +132,7 @@ The `[Trace]` attribute is like a light switch - but first you need to install t
 
 ## 📚 More Examples
 
-Check out our [examples folder](https://github.com/mrviduus/xUnit.OTel/tree/main/examples) for:
+Check out our [examples folder](https://github.com/mrviduus/xUnitOTel/tree/main/examples) for:
 - Testing with databases
 - Testing microservices
 - Complex scenarios

@@ -15,12 +15,12 @@ using OpenTelemetry.Resources;
 // Import OpenTelemetry tracing functionality
 using OpenTelemetry.Trace;
 // Import custom logging implementations for xUnit integration
-using xUnit.OTel.Logging;
+using xUnitOTel.Logging;
 // Import custom processors for OpenTelemetry data processing
-using xUnit.OTel.Processors;
+using xUnitOTel.Processors;
 
 // Define the namespace for OpenTelemetry configuration extensions
-namespace xUnit.OTel.Diagnostics;
+namespace xUnitOTel.Diagnostics;
 
 // Static class containing extension methods for configuring OpenTelemetry diagnostics in xUnit tests
 // This class provides a fluent API for setting up tracing, metrics, and logging with minimal configuration
@@ -104,7 +104,7 @@ public static class OTelConfigurationExtensions
         return builder;
     }
 
-    // Private extension method that configures default metrics collection for xUnit.OTel
+    // Private extension method that configures default metrics collection for xUnitOTel
     // This method sets up standard metrics instrumentation suitable for test scenarios
     private static void ConfigureDefaultMetrics(
         this MeterProviderBuilder metrics,
@@ -121,7 +121,7 @@ public static class OTelConfigurationExtensions
             .AddRuntimeInstrumentation();
     }
 
-    // Private extension method that configures default distributed tracing for xUnit.OTel
+    // Private extension method that configures default distributed tracing for xUnitOTel
     // This method sets up instrumentation for common libraries and frameworks used in tests
     private static void ConfigureDefaultTracing(
         this TracerProviderBuilder tracing,

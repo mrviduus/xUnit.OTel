@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Xunit.Sdk;
 
 // Define the namespace for logging options
-namespace xUnit.OTel.Logging;
+namespace xUnitOTel.Logging;
 
 // Configuration class that defines options for the XunitLogger behavior
 // This class follows the options pattern and can be configured through dependency injection

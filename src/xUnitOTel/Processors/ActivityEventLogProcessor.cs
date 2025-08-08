@@ -6,7 +6,7 @@ using OpenTelemetry;
 using OpenTelemetry.Logs;
 
 // Define the namespace for OpenTelemetry processors
-namespace xUnit.OTel.Processors;
+namespace xUnitOTel.Processors;
 
 // Processor class that converts log records into activity events for better trace correlation
 // This processor extends BaseProcessor<LogRecord> to automatically attach log entries as events to the current activity

@@ -1,10 +1,10 @@
 // Import the core context value functionality for async context management
-using xUnit.OTel.Core;
+using xUnitOTel.Core;
 // Import xUnit framework interfaces for test output
 using Xunit;
 
 // Define the namespace for logging functionality
-namespace xUnit.OTel.Logging;
+namespace xUnitOTel.Logging;
 
 // Interface that provides access to xUnit's ITestOutputHelper in a context-aware manner
 // This abstraction allows different implementations for accessing test output helpers

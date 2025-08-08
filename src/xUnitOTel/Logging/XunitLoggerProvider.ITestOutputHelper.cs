@@ -2,7 +2,7 @@
 using Xunit;
 
 // Define the namespace for logging provider implementation
-namespace xUnit.OTel.Logging;
+namespace xUnitOTel.Logging;
 
 // Partial class continuation that contains constructors for XunitLoggerProvider
 // This separation allows for cleaner organization of constructor logic

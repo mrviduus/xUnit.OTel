@@ -49,9 +49,9 @@ jobs:
 
     - name: Find project file
       run: |
-        CSPROJ_FILE=$(find . -name "xUnit.OTel.csproj" -type f | head -n 1)
+        CSPROJ_FILE=$(find . -name "xUnitOTel.csproj" -type f | head -n 1)
         if [ -z "$CSPROJ_FILE" ]; then
-          echo "Error: Could not find xUnit.OTel.csproj"
+          echo "Error: Could not find xUnitOTel.csproj"
           exit 1
         fi
         echo "CSPROJ_FILE=$CSPROJ_FILE" >> $GITHUB_ENV
